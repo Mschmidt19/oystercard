@@ -24,5 +24,9 @@ describe OysterCard do
 
   describe "#deduct" do
     it { is_expected.to respond_to(:deduct).with(1).argument }
+    it "Reduces the blance by argument passed to deduct" do
+      fare = 15.00
+      expect { subject.deduct(fare) }.to change{ subject.balance }.by -(fare)
+    end
   end
 end
