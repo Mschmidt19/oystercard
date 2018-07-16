@@ -4,7 +4,7 @@ class OysterCard
 
   def initialize
     @balance = 0.00
-    @monies = 0.00
+    @in_journey = false
   end
 
   attr_reader :balance
@@ -19,8 +19,20 @@ class OysterCard
     @balance -= fare
   end
 
+  def in_journey?
+    @in_journey
+  end
+
+  def touch_in
+    @in_journey = true
+  end
+
+  def touch_out
+    @in_journey = false
+  end
+
   private
-  
+
   def exceeds_limit?
     return true if (@balance + @monies) > MAXIMUM_LIMIT
     false
