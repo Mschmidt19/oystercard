@@ -1,6 +1,8 @@
 require "oystercard"
 describe OysterCard do
 
+  let(:station){ double :station }
+  
   before do
     @oc = OysterCard.new
   end
@@ -26,14 +28,6 @@ describe OysterCard do
     end
   end
 
-  describe "#deduct" do
-    it { is_expected.to respond_to(:deduct).with(1).argument }
-    it "Reduces the balance by argument passed to deduct" do
-      fare = 15.00
-      expect { subject.deduct(fare) }.to change{ subject.balance }.by -(fare)
-    end
-  end
-
   describe "#in_journey?" do
     it { is_expected.to respond_to :in_journey? }
     it "initializes as false" do
@@ -52,17 +46,21 @@ describe OysterCard do
   end
 
   describe "#touch_in" do
-    it { is_expected.to respond_to :touch_in }
+    it { is_expected.to respond_to(:touch_in).with(1).argument }
     it "Raises an error if balance is not greater than the minimum fare" do
-      expect { subject.touch_in }.to raise_error("You must have a minimum balance of #{OysterCard::MINIMUM_FARE} before touching in")
+      expect { subject.touch_in(station) }.to raise_error("You must have a minimum balance of #{OysterCard::MINIMUM_FARE} before touching in")
     end
     context "Has minimum fare" do
       before do
         @oc.top_up(30.00)
       end
       it "Changes in_journey to true" do
-        @oc.touch_in
+        @oc.touch_in(station)
         expect(@oc).to be_in_journey
+      end
+      it "stores the entry station" do
+        @oc.touch_in(station)
+        expect(@oc.entry_station). to eq station
       end
     end
   end
@@ -74,9 +72,13 @@ describe OysterCard do
         @oc.top_up(30.00)
       end
       it "Changes in_journey to false" do
-        @oc.touch_in
+        @oc.touch_in(station)
         @oc.touch_out
         expect(@oc).not_to be_in_journey
+      end
+      it "Charges minimum fare for the journey" do
+        @oc.touch_in(station)
+        expect { @oc.touch_out }.to change{ @oc.balance }.by(-OysterCard::MINIMUM_FARE)
       end
     end
   end
