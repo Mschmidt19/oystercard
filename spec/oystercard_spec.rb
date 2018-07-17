@@ -1,9 +1,13 @@
 require "oystercard"
 describe OysterCard do
+
+  before do
+    @oc = OysterCard.new
+  end
+
   describe "#initialize" do
     it "Should initialize balance to 0.00" do
-      oc = OysterCard.new
-      expect(oc.balance).to eq 0.00
+      expect(subject.balance).to eq 0.00
     end
   end
   describe "#balance" do
@@ -32,28 +36,48 @@ describe OysterCard do
 
   describe "#in_journey?" do
     it { is_expected.to respond_to :in_journey? }
-    it "returns a boolean" do
-      expect(subject.in_journey?).to be(true).or be(false)
-    end
     it "initializes as false" do
       expect(subject).not_to be_in_journey
+    end
+    context "Has minimum fare" do
+      before do
+        @oc.top_up(30.00)
+      end
+      it "returns a boolean" do
+        expect(@oc.in_journey?).to be(true).or be(false)
+        subject.touch_out
+        expect(@oc.in_journey?).to be(true).or be(false)
+      end
     end
   end
 
   describe "#touch_in" do
     it { is_expected.to respond_to :touch_in }
-    it "Changes in_journey to true" do
-      subject.touch_in
-      expect(subject).to be_in_journey
+    it "Raises an error if balance is not greater than the minimum fare" do
+      expect { subject.touch_in }.to raise_error("You must have a minimum balance of #{OysterCard::MINIMUM_FARE} before touching in")
+    end
+    context "Has minimum fare" do
+      before do
+        @oc.top_up(30.00)
+      end
+      it "Changes in_journey to true" do
+        @oc.touch_in
+        expect(@oc).to be_in_journey
+      end
     end
   end
 
   describe "#touch_out" do
     it { is_expected.to respond_to :touch_out }
-    it "Changes in_journey to false" do
-      subject.touch_in
-      subject.touch_out
-      expect(subject).not_to be_in_journey
+    context "Has minimum fare" do
+      before do
+        @oc.top_up(30.00)
+      end
+      it "Changes in_journey to false" do
+        @oc.touch_in
+        @oc.touch_out
+        expect(@oc).not_to be_in_journey
+      end
     end
   end
 end
