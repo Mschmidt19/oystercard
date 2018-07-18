@@ -1,8 +1,10 @@
 require "oystercard"
 describe OysterCard do
 
-  let(:station){ double :station }
   let(:oc) { OysterCard.new }
+  let(:entry_station){ double :station }
+  let(:exit_station){ double :station }
+  let(:journey){ {:entry=>entry_station, :exit=>exit_station} }
 
   describe "#initialize" do
     it "Should initialize balance to 0.00" do
@@ -35,8 +37,9 @@ describe OysterCard do
         oc.top_up(30.00)
       end
       it "returns a boolean" do
+        oc.touch_in(entry_station)
         expect(oc.in_journey?).to be(true).or be(false)
-        subject.touch_out("Whitechapel")
+        oc.touch_out(exit_station)
         expect(oc.in_journey?).to be(true).or be(false)
       end
     end
@@ -45,19 +48,19 @@ describe OysterCard do
   describe "#touch_in" do
     it { is_expected.to respond_to(:touch_in).with(1).argument }
     it "Raises an error if balance is not greater than the minimum fare" do
-      expect { subject.touch_in(station) }.to raise_error("You must have a minimum balance of #{OysterCard::MINIMUM_FARE} before touching in")
+      expect { subject.touch_in(entry_station) }.to raise_error("You must have a minimum balance of #{OysterCard::MINIMUM_FARE} before touching in")
     end
     context "Has minimum fare" do
       before do
         oc.top_up(30.00)
       end
       it "Changes in_journey to true" do
-        oc.touch_in(station)
+        oc.touch_in(entry_station)
         expect(oc).to be_in_journey
       end
       it "stores the entry station" do
-        oc.touch_in(station)
-        expect(oc.entry_station). to eq station
+        oc.touch_in(entry_station)
+        expect(oc.list_of_journies.last[:entry]). to eq entry_station
       end
     end
   end
@@ -69,19 +72,35 @@ describe OysterCard do
         oc.top_up(30.00)
       end
       it "Changes in_journey to false" do
-        oc.touch_in(station)
-        oc.touch_out("Whitechapel")
+        oc.touch_in(entry_station)
+        oc.touch_out(exit_station)
         expect(oc).not_to be_in_journey
       end
       it "Charges minimum fare for the journey" do
-        oc.touch_in(station)
-        expect { oc.touch_out("Whitechapel") }.to change{ oc.balance }.by(-OysterCard::MINIMUM_FARE)
+        oc.touch_in(entry_station)
+        expect { oc.touch_out(exit_station) }.to change{ oc.balance }.by(-OysterCard::MINIMUM_FARE)
       end
       it "Pushes the completed journey to list_of_journeys" do
-        oc.touch_in("Aldgate East")
-        oc.touch_out("Whitechapel")
+        oc.touch_in(entry_station)
+        oc.touch_out(exit_station)
         # Checks that the most recent addition to the array is the new journey
-        expect(oc.list_of_journies[oc.list_of_journies.length - 1]).to eq ({:entry=>"Aldgate East", :exit=>"Whitechapel"})
+        expect(oc.list_of_journies.last).to eq journey
+      end
+    end
+  end
+
+  describe "#list_of_journies" do
+    context "Has minimum fare" do
+      before do
+        oc.top_up(30)
+      end
+      it "initializes as an empty array" do
+        expect(oc.list_of_journies).to be_empty
+      end
+      it "stores a journey" do
+        oc.touch_in(entry_station)
+        oc.touch_out(exit_station)
+        expect(oc.list_of_journies).to include journey
       end
     end
   end

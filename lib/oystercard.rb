@@ -10,8 +10,6 @@ class OysterCard
 
   attr_reader :balance
 
-  attr_reader :entry_station
-
   attr_accessor :list_of_journies
 
   def top_up(amount)
@@ -21,18 +19,18 @@ class OysterCard
   end
 
   def in_journey?
-    !!entry_station
+    return false if @list_of_journies.empty?
+    !@list_of_journies.last.key?(:exit)
   end
 
   def touch_in(entry_station)
     fail "You must have a minimum balance of #{MINIMUM_FARE} before touching in" unless has_minimum_fare?
-    @entry_station = entry_station
+    @list_of_journies.push({:entry => entry_station})
   end
 
   def touch_out(exit_station)
     deduct(MINIMUM_FARE)
-    @list_of_journies.push({:entry => @entry_station, :exit => exit_station})
-    @entry_station = nil
+    @list_of_journies.last[:exit] = exit_station
   end
 
   private
