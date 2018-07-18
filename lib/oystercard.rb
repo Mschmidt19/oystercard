@@ -1,21 +1,27 @@
+require_relative 'station'
+require_relative 'journey'
+
 class OysterCard
 
-  MAXIMUM_LIMIT = 90.00
-  MINIMUM_FARE = 1.00
+  #In order to avoid rounding issues with floats, prices are written in terms of cents
+  MAXIMUM_LIMIT = 9000
+  MINIMUM_FARE = 180
 
   def initialize
-    @balance = 0.00
+    @balance = 0
     @list_of_journies = []
   end
 
-  attr_reader :balance
-
   attr_accessor :list_of_journies
 
+  def balance
+    @balance.to_f / 100
+  end
+
   def top_up(amount)
-    @amount = amount
-    fail "Balance cannot exceed #{MAXIMUM_LIMIT}" if exceeds_limit?
-    @balance += amount
+    @amount = (amount * 100).to_i
+    fail "Balance cannot exceed #{MAXIMUM_LIMIT.to_f / 100}" if exceeds_limit?
+    @balance += @amount
   end
 
   def in_journey?
@@ -24,7 +30,7 @@ class OysterCard
   end
 
   def touch_in(entry_station)
-    fail "You must have a minimum balance of #{MINIMUM_FARE} before touching in" unless has_minimum_fare?
+    fail "You must have a minimum balance of #{MINIMUM_FARE.to_f / 100} before touching in" unless has_minimum_fare?
     @list_of_journies.push({:entry => entry_station})
   end
 

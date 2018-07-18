@@ -8,7 +8,7 @@ describe OysterCard do
 
   describe "#initialize" do
     it "Should initialize balance to 0.00" do
-      expect(subject.balance).to eq 0.00
+      expect(subject.balance).to eq 0
     end
   end
   describe "#balance" do
@@ -23,7 +23,7 @@ describe OysterCard do
     end
     it "Raises an error if top up amount will cause balance to exceed maximum limit" do
       topup_amount = 95.00
-      expect { subject.top_up(topup_amount) }.to raise_error("Balance cannot exceed #{OysterCard::MAXIMUM_LIMIT}")
+      expect { subject.top_up(topup_amount) }.to raise_error("Balance cannot exceed #{OysterCard::MAXIMUM_LIMIT.to_f / 100}")
     end
   end
 
@@ -48,7 +48,7 @@ describe OysterCard do
   describe "#touch_in" do
     it { is_expected.to respond_to(:touch_in).with(1).argument }
     it "Raises an error if balance is not greater than the minimum fare" do
-      expect { subject.touch_in(entry_station) }.to raise_error("You must have a minimum balance of #{OysterCard::MINIMUM_FARE} before touching in")
+      expect { subject.touch_in(entry_station) }.to raise_error("You must have a minimum balance of #{OysterCard::MINIMUM_FARE.to_f / 100} before touching in")
     end
     context "Has minimum fare" do
       before do
@@ -78,7 +78,8 @@ describe OysterCard do
       end
       it "Charges minimum fare for the journey" do
         oc.touch_in(entry_station)
-        expect { oc.touch_out(exit_station) }.to change{ oc.balance }.by(-OysterCard::MINIMUM_FARE)
+        oc.touch_out(exit_station)
+        expect(oc.balance).to eq 28.20
       end
       it "Pushes the completed journey to list_of_journeys" do
         oc.touch_in(entry_station)
@@ -92,7 +93,7 @@ describe OysterCard do
   describe "#list_of_journies" do
     context "Has minimum fare" do
       before do
-        oc.top_up(30)
+        oc.top_up(30.00)
       end
       it "initializes as an empty array" do
         expect(oc.list_of_journies).to be_empty
