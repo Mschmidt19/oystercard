@@ -11,15 +11,26 @@ describe OysterCard do
       expect(subject.balance).to eq 0
     end
   end
+
   describe "#balance" do
     it { is_expected.to respond_to :balance }
   end
 
+  describe "#pretty_balance" do
+    it { is_expected.to respond_to :pretty_balance }
+    it "displays balance in a very readable way" do
+      oc.top_up(35.75)
+      expect(oc.pretty_balance).to eq "£35.75"
+    end
+    it "works even when balance is between 0 and 3 digits" do
+      expect(oc.pretty_balance).to eq "£0.00"
+    end
+  end
+
   describe "#top_up" do
     it { is_expected.to respond_to(:top_up).with(1).argument }
-    it "Increments balance by argument passed to top_up" do
-      topup_amount = 1.20
-      expect { subject.top_up(topup_amount) }.to change{ subject.balance }.by topup_amount
+    it "Increments balance by argument passed to top_up (in pence)" do
+      expect { subject.top_up(1.20) }.to change{ subject.balance }.by 120
     end
     it "Raises an error if top up amount will cause balance to exceed maximum limit" do
       topup_amount = 95.00
@@ -76,10 +87,10 @@ describe OysterCard do
         oc.touch_out(exit_station)
         expect(oc).not_to be_in_journey
       end
-      it "Charges minimum fare for the journey" do
+      it "Charges minimum fare for the journey (in pence)" do
         oc.touch_in(entry_station)
-        oc.touch_out(exit_station)
-        expect(oc.balance).to eq 28.20
+        expect { oc.touch_out(exit_station) }.to change{ oc.balance }.by(-180)
+        # expect(oc.balance).to eq 28.20
       end
       it "Pushes the completed journey to list_of_journeys" do
         oc.touch_in(entry_station)

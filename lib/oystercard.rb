@@ -14,8 +14,10 @@ class OysterCard
 
   attr_accessor :list_of_journies
 
-  def balance
-    @balance.to_f / 100
+  attr_reader :balance
+
+  def pretty_balance
+    return "£#{sprintf('%.2f', (balance.to_f / 100).round(2))}"
   end
 
   def top_up(amount)
