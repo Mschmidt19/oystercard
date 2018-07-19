@@ -1,31 +1,39 @@
 class Journey
 
-  def in_journey?
-    return false if @list_of_journies.empty?
-    !@list_of_journies.last.key?(:exit)
+  MINIMUM_FARE = 180
+  PENALTY = 600
+
+  def initialize(entry_station = nil)
+    @entry_station = entry_station
+    @complete = !entry_station
+    # @current_journey = {}
   end
 
-  def touch_in(entry_station)
-    fail "You must have a minimum balance of #{MINIMUM_FARE} before touching in" unless has_minimum_fare?
-    @list_of_journies.push({:entry => entry_station})
+  attr_reader :entry_station
+
+  attr_reader :exit_station
+
+  attr_accessor :current_journey
+
+  def start(station)
+    @entry_station = station if @entry == nil
+    @complete = false
+    # @current_journey[:entry] = @entry_station
   end
 
-  def touch_out(exit_station)
-    deduct(MINIMUM_FARE)
-    @list_of_journies.last[:exit] = exit_station
+  def finish(station)
+    @exit_station = station
+    @complete = true
+    # @current_journey[:exit] = @exit_station
   end
 
-  def deduct(fare)
-    @balance -= fare
-  end
-  
-  private
-
-  def exceeds_limit?
-    (@balance + @amount) > MAXIMUM_LIMIT
+  def complete?
+    @complete
   end
 
-  def has_minimum_fare?
-    @balance >= MINIMUM_FARE
+  def fare
+    return PENALTY unless complete?
+    return MINIMUM_FARE
   end
+
 end

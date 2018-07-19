@@ -10,11 +10,14 @@ class OysterCard
   def initialize
     @balance = 0
     @list_of_journies = []
+    @journey = nil
   end
 
   attr_accessor :list_of_journies
 
   attr_reader :balance
+
+  attr_reader :journey
 
   def pretty_balance
     return "£#{sprintf('%.2f', (balance.to_f / 100).round(2))}"
@@ -26,19 +29,33 @@ class OysterCard
     @balance += @amount
   end
 
-  def in_journey?
-    return false if @list_of_journies.empty?
-    !@list_of_journies.last.key?(:exit)
-  end
+  # def in_journey?
+  #   return false if @list_of_journies.empty?
+  #   !@list_of_journies.last.completed?
+  # end
 
   def touch_in(entry_station)
     fail "You must have a minimum balance of #{MINIMUM_FARE.to_f / 100} before touching in" unless has_minimum_fare?
-    @list_of_journies.push({:entry => entry_station})
+    unless @journey == nil || @journey.complete?
+      @list_of_journies.push(@journey)
+      deduct(@journey.fare)
+    end
+      @journey = Journey.new(entry_station)
+    # @list_of_journies.push({:entry => entry_station})
   end
 
   def touch_out(exit_station)
-    deduct(MINIMUM_FARE)
-    @list_of_journies.last[:exit] = exit_station
+    if @journey.exit_station == nil
+      @journey.finish(exit_station)
+      deduct(@journey.fare)
+    else
+      # DEDUCT SHOULD BE IN HERE
+      @list_of_journies.push(@journey)
+      @journey = nil
+      @journey.finish(exit_station)
+    end
+    @list_of_journies.push(@journey)
+    # @list_of_journies.last[:exit] = exit_station
   end
 
   private

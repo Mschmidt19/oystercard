@@ -38,23 +38,23 @@ describe OysterCard do
     end
   end
 
-  describe "#in_journey?" do
-    it { is_expected.to respond_to :in_journey? }
-    it "initializes as false" do
-      expect(subject).not_to be_in_journey
-    end
-    context "Has minimum fare" do
-      before do
-        oc.top_up(30.00)
-      end
-      it "returns a boolean" do
-        oc.touch_in(entry_station)
-        expect(oc.in_journey?).to be(true).or be(false)
-        oc.touch_out(exit_station)
-        expect(oc.in_journey?).to be(true).or be(false)
-      end
-    end
-  end
+  # describe "#in_journey?" do
+  #   it { is_expected.to respond_to :in_journey? }
+  #   it "initializes as false" do
+  #     expect(subject).not_to be_in_journey
+  #   end
+  #   context "Has minimum fare" do
+  #     before do
+  #       oc.top_up(30.00)
+  #     end
+  #     it "returns a boolean" do
+  #       oc.touch_in(entry_station)
+  #       expect(oc.in_journey?).to be(true).or be(false)
+  #       oc.touch_out(exit_station)
+  #       expect(oc.in_journey?).to be(true).or be(false)
+  #     end
+  #   end
+  # end
 
   describe "#touch_in" do
     it { is_expected.to respond_to(:touch_in).with(1).argument }
